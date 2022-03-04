@@ -275,3 +275,65 @@ function findMaxinalNonCrossingCollections(k, n, file)
     return list
 end
 
+function findMaxinalNonCrossingCollections2(k, n, file)
+    function next!(t,n,lastIndex)
+        if t[lastIndex] == n 
+            if lastIndex == 1
+                t[lastIndex] = -1
+                return
+            end
+            next!(t,n-1,lastIndex-1)
+            t[lastIndex] = t[lastIndex-1]+1
+        else
+            t[lastIndex] = t[lastIndex] + 1
+        end
+    end
+
+    if file != false
+        open(file, "a") do io
+            write(io, "\n")
+            write(io, "*** Maximal (" * string(k) * "," * string(n) * ")-Non-Crossing collection of labels ***\n");
+        end;
+    end;
+    list = []
+    nonprojs = setdiff(collect(combinations(1:n,k)), collectionOfProjectives(k, n))
+    combs = combinations(nonprojs,k*(n-k)-n+1)
+    
+    track = [i for i in 1:k]
+    potentialCollection = []
+
+    l = Int(n/k)
+    
+
+    function recF(tr, potential, add)
+        for a in potential
+            for b in add
+                if !isNonCrossing(a,b)
+                    return 
+                end
+            end
+        end
+        potential = union(potential, add)
+        if length(potential) == k*(n-k)-n+1
+            if isMaximalNonCrossingCollection(k,n,potential)
+                #println(potential)
+                push!(list, potential);
+            end
+            return
+        end
+        t = copy(tr)
+        while true
+            next!(t,n,k)
+            if t[begin] == -1
+                return
+            end
+            if !(t in potential)
+                recF(t,potential, [rotateSet(n,j*k, t) for j in 0:l-1])
+            end
+        end
+    end
+
+    recF(track, [], [])
+
+end
+

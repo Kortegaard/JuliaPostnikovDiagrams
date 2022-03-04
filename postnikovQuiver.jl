@@ -84,7 +84,13 @@ function constructCliqueQuiver(k,n, collection, collectionQuiver)
     for i in 1:n
         v = Vertex(string(i))
         v.data = Dict{String, Any}()
-        v.data["position"] = [cos(2*pi*(2*i + (n-1))/(2*n)), sin(2*pi*(2*i + (n-1))/(2*n))]
+        offset = 0
+        if n%2 == 0
+            offset = n+3 # n-1
+        else
+            offset = n+2
+        end
+        v.data["position"] = [cos(2*pi*(2*i + (offset))/(2*n)), sin(2*pi*(2*i + (offset))/(2*n))]
         add_vertex!(cliqueQuiver, v)
     end
 
@@ -113,6 +119,9 @@ end
 function dirArrowFromToVertex(q::Quiver, f::Vertex, t::Vertex, dir::String)
     neighbours_verts = neighbours(q,f)
     setdiff!(neighbours_verts,[t])
+    if length(neighbours_verts) == 0 
+        return nothing
+    end
     diff = t.data["position"] - f.data["position"]
     neighbours_angles = [angle(diff, neighbours_verts[i].data["position"] - f.data["position"] ) for i in 1:length(neighbours_verts)]
     neighbours_angles =  map(x -> (x < 0 ? x + 360 : x), neighbours_angles)
@@ -128,85 +137,162 @@ function dirArrowFromToVertex(q::Quiver, f::Vertex, t::Vertex, dir::String)
 end
 
 
-function plot_quiver(fig::Figure, qq::Quiver)
-    plot_quiver(fig, qq, true)
+
+
+##################3
+
+using Interpolations
+
+function postnikovDiagramDrawingData(cliqueQuiver, n)
+    lns = []
+    for i in 1:n
+        v = find_vertex(cliqueQuiver, Vertex(string(i)))
+        neighs = neighbours(cliqueQuiver, v)
+        if length(neighs) == 0; continue; end
+        n = neighs[1]
+
+        points =  [v.data["position"]]
+        # Replace 100 by a more sensable choise ()
+        for _ in 1:100
+            nn_dir = ""
+            if haskey(n.data, "color") && n.data["color"] == "black"
+                nn_dir = "right"
+            elseif haskey(n.data, "color") && n.data["color"] == "white"
+                nn_dir = "left"
+            else
+                break
+            end
+            
+
+            nn = dirArrowFromToVertex(cliqueQuiver, n, v, nn_dir)
+            if nn == nothing 
+                break
+            end
+            v = n
+            n = nn
+            if haskey(n.data, "color")
+                push!(points, mean_vector([n.data["position"], v.data["position"]]))
+            else
+                push!(points, n.data["position"])
+            end
+        end
+
+        # Making the lines smoother using cubic interpolation (Interpolation library)
+        A = hcat(map(x->[i for i in x], collect(zip(points...)))...)
+        t = 0:(1/(length(points)-1)):1
+        itp = Interpolations.scale(interpolate(A, (BSpline(Cubic(Natural(OnGrid()))), NoInterp())), t, 1:2)
+        tfine = 0:.01:1
+        xs, ys = [itp(t,1) for t in tfine], [itp(t,2) for t in tfine]
+
+        push!(lns, [xs,ys,length(points)])
+    end
+
+    arrs = []
+    for mm in lns
+        
+        for j in 0:mm[3]-2
+        #for j in 0:0
+            index = ((2*j+1)*(length(mm[1]))÷(2*(mm[3]-1)))+1
+            point = [mm[1][index], mm[2][index]]
+            next_point = [mm[1][index+2], mm[2][index+2]]
+            dir = (next_point - point)
+            agl = angle([0.0,1.0], dir)*pi /180
+            
+            push!(arrs, [point, agl]);
+        end
+    end
+
+    return lns, arrs
 end
 
-function plot_quiver(fig::Figure, qq::Quiver, directed::Bool)
-    ax = Axis(fig[1, 1], backgroundcolor = :transparent)
-    hidedecorations!(ax)
-    hidespines!(ax)
-
-    ax.xticksvisible = false
-    ax.yticksvisible = false
-    ax.backgroundcolor = :transparent
 
 
-    #cirlce
-    sides = 100
-    rad = 1
-    circle_xs = [rad*cos(2*pi*i/sides) for i in 0:sides]
-    circle_ys = [rad*sin(2*pi*i/sides) for i in 0:sides]
-    lines!(circle_xs, circle_ys, linewidth=2, linestyle = :dash)
-    ###
 
+
+
+
+########## PLOTTING ###########
+
+function plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor="black", arrow_offset = 0.1)
     #Arrows
     for arr in arrows(qq)
-            offset = 0.1
+            offset = arrow_offset
             offset2 = (1-offset)^2
             dir = arr.termination.data["position"]-arr.start.data["position"]
             if directed
-                arrows!(map(x->[x],arr.start.data["position"]+dir*offset)..., map(x->[x], arr.termination.data["position"]-arr.start.data["position"])..., lengthscale=offset2)
+                arrows!(map(x->[x],arr.start.data["position"]+dir*offset)..., map(x->[x], arr.termination.data["position"]-arr.start.data["position"])..., lengthscale=offset2, color=linecolor, linewidth=1.5)
             else
-                lines!( map(x->[i for i in x],collect(zip(arr.start.data["position"], arr.termination.data["position"]) ))..., color="black")
+                lines!( map(x->[i for i in x],collect(zip(arr.start.data["position"], arr.termination.data["position"]) ))..., color=linecolor)
             end
-            #println( map(x->[i for i in x],collect(zip(arr.start.data["position"], arr.termination.data["position"]) )) )
-
     end
 
     #Points
-    scatter!(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., legend = false)
+    scatter!(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., legend = false, color=vertex_color, markersize=10)
 
 end
 
-function save_quiver_plot(q::Quiver, fileName::String)
-    f = Figure(resolution = (800 , 800), backgroundcolor = :transparent,figure_padding = 1)
-    plot_quiver(f, q)
-    save(fileName, f)
+function drawPostnikovDiagram(k,n,maximalNonCrossingCollection; fig = nothing, showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, saveAs=false, drawOuterCirle=true)
+
+    postnikovQuiver = quiverFromCollection(k,n, maximalNonCrossingCollection);
+    cliqueQuiver = constructCliqueQuiver(k,n, maximalNonCrossingCollection, postnikovQuiver)
+    m, arrs = postnikovDiagramDrawingData(cliqueQuiver, n)
+
+    if fig == nothing
+        fig = Figure(resolution = (800 , 800), backgroundcolor = :transparent,figure_padding = 1);
+        ax = Axis(fig[1, 1], backgroundcolor = :transparent)
+        hidedecorations!(ax)
+        hidespines!(ax)
+        ax.xticksvisible = false
+        ax.yticksvisible = false
+        ax.backgroundcolor = :transparent
+    #else
+        #ax = Axis(fig[1, 1], backgroundcolor = :transparent)
+    end
+
+    # Position Postnikov vertices in the middle of cliques
+    #for v in vertices(postnikovQuiver)
+    #    if !haskey(v.data, "springFrozen") || v.data["springFrozen"] == false
+    #        v_clique_vertices = filter(x-> haskey(x.data, "clique") && v in x.data["clique"], vertices(cliqueQuiver))
+    #        mean_vec = mean_vector(map(x->x.data["position"], v_clique_vertices))
+    #        v.data["position"] = mean_vec
+    #    end
+    #end
+
+#map(x->x.data["position"], m)
+
+    if drawOuterCirle
+        sides = 100
+        rad = 1
+        circle_xs = [rad*cos(2*pi*i/sides) for i in 0:sides]
+        circle_ys = [rad*sin(2*pi*i/sides) for i in 0:sides]
+        lines!(circle_xs, circle_ys, linewidth=2, linestyle = :dash)
+    end
+
+
+    #println("HE")
+
+    if showPlabicGraph
+        plot_quiver(cliqueQuiver, directed=false, vertex_color=:red);
+    end
+    if showPostnikovQuiver
+        plot_quiver(postnikovQuiver, directed=true);
+    end
+
+    if showPostnikovDiagram
+        for mm in m
+            lines!( mm[1], mm[2], color="green")
+        end
+    end
+    if showPostnikovDiagram && showPostnikovDiamgramArrows
+        for arr in arrs
+            scatter!([arr[1][1]], [arr[1][2]], color="green", marker='▲', rotations=[arr[2]])
+        end
+    end
+    if saveAs
+        save(saveAs, f)
+    end
+
+    return fig
+
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#open("test.gn", "w") do io
-#    write(io, "set xrange [-5:5]\n")
-#    write(io, "set yrange [-5:5]\n")
-#    write(io, "set style arrow 1 head filled size screen 0.02,15,15 ls 1\n")
-#    write(io, "plot NaN t ''\n")
-#    for arr in arrows(q)
-#        write(io, "set arrow from ") 
-#        write(io, string(arr.start.data["position"][1]),",",string(arr.start.data["position"][2]))
-#        write(io, " to ") 
-#        write(io, string(arr.termination.data["position"][1]),",",string(arr.termination.data["position"][2]))
-#        write(io, " as 1\n")
-#    end
-#    write(io, "plot '-' w points lc rgb \"black\" pt 7\n")
-#    for v in vertices(q)
-#        write(io, string(v.data["position"][1]), " ", string(v.data["position"][2], "\n"))
-#    end
-#    write(io, "EOF\n")
-    #write(io, "plot NaN t ''\n")
-#
-#end
 
