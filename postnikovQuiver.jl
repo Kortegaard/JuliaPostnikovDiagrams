@@ -37,7 +37,8 @@ function quiverFromCollection(k,n,collection)::Quiver
     end
 
     for i in 1:1000
-        spring_step(q,0.1,1.0,1.0)
+        spring_step(q,0.1,0.2,1.0)
+        #spring_step(q,0.1,1.0,1.0)
     end
 
     normalize_quiver!(q)
@@ -86,7 +87,7 @@ function constructCliqueQuiver(k,n, collection, collectionQuiver)
         v.data = Dict{String, Any}()
         offset = 0
         if n%2 == 0
-            offset = n+3 # n-1
+            offset = n+5 #n+3 # n-1
         else
             offset = n+2
         end
@@ -245,8 +246,6 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection; fig = nothing, s
         ax.xticksvisible = false
         ax.yticksvisible = false
         ax.backgroundcolor = :transparent
-    #else
-        #ax = Axis(fig[1, 1], backgroundcolor = :transparent)
     end
 
     # Position Postnikov vertices in the middle of cliques
@@ -262,9 +261,9 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection; fig = nothing, s
 
     if drawOuterCirle
         sides = 100
-        rad = 1
-        circle_xs = [rad*cos(2*pi*i/sides) for i in 0:sides]
-        circle_ys = [rad*sin(2*pi*i/sides) for i in 0:sides]
+        #rad = 1
+        circle_xs = [cos(2*pi*i/sides) for i in 0:sides]
+        circle_ys = [sin(2*pi*i/sides) for i in 0:sides]
         lines!(circle_xs, circle_ys, linewidth=2, linestyle = :dash)
     end
 

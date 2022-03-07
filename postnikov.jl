@@ -128,6 +128,20 @@ function isEquivalentToCollectionUpToRotation(n, col1, col2)
 end
 
 """
+"""
+function isEquivalentToCollectionUpToMirrorAndRotation(n, col1, col2)
+    col1 = sort(col1)
+    col1Mirr = sort(map(reverse, col1))
+    for i in 0:n
+        c2 = sort(rotateCollection(n, i, col2))
+        if col1 == c2; return true; end
+        if col1Mirr == c2; return true; end
+    end
+    return false
+end
+
+
+"""
     
 """
 function collectionOfProjectives(k,n)

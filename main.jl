@@ -1,13 +1,12 @@
 include("postnikov.jl");
 include("postnikovQuiver.jl");
 include("maxcollection.jl")
+include("out412.jl")
+include("out312.jl")
+include("out510.jl")
 
-k = 4
-n = 12
-cl = upToEquiv(k,n,col412)
-
-for i in 1:length(cl)
-    fig = Figure(resolution = (1600 , 1600), backgroundcolor = :transparent,figure_padding = 1);
+function drawFourDiags(k,n,coll, fileName)
+    fig = Figure(resolution = (1600, 1600), backgroundcolor = :transparent,figure_padding = 1);
 
     ax = Axis(fig[1, 1], backgroundcolor = :transparent)
     hidedecorations!(ax)
@@ -15,7 +14,7 @@ for i in 1:length(cl)
     ax.xticksvisible = false
     ax.yticksvisible = false
     ax.backgroundcolor = :transparent
-    poshDrag = drawPostnikovDiagram(k,n,cl[i],
+    poshDrag = drawPostnikovDiagram(k,n,coll,
         showPostnikovQuiver         = false,
         showPlabicGraph             = false, 
         showPostnikovDiagram        = true, 
@@ -29,7 +28,7 @@ for i in 1:length(cl)
     ax2.xticksvisible = false
     ax2.yticksvisible = false
     ax2.backgroundcolor = :transparent
-    poshDrag = drawPostnikovDiagram(k,n,cl[i],
+    poshDrag = drawPostnikovDiagram(k,n,coll,
         showPostnikovQuiver         = true,
         showPlabicGraph             = false, 
         showPostnikovDiagram        = false, 
@@ -44,7 +43,7 @@ for i in 1:length(cl)
     ax3.xticksvisible = false
     ax3.yticksvisible = false
     ax3.backgroundcolor = :transparent
-    poshDrag = drawPostnikovDiagram(k,n,cl[i],
+    poshDrag = drawPostnikovDiagram(k,n,coll,
         showPostnikovQuiver         = true,
         showPlabicGraph             = false, 
         showPostnikovDiagram        = true, 
@@ -59,7 +58,7 @@ for i in 1:length(cl)
     ax4.xticksvisible = false
     ax4.yticksvisible = false
     ax4.backgroundcolor = :transparent
-    poshDrag = drawPostnikovDiagram(k,n,cl[i],
+    poshDrag = drawPostnikovDiagram(k,n,coll,
         showPostnikovQuiver         = true,
         showPlabicGraph             = true, 
         showPostnikovDiagram        = false, 
@@ -68,7 +67,18 @@ for i in 1:length(cl)
     );
 
 
-    save("412_postnikov/" * string(i) * ".pdf", fig);
+    save(fileName, fig);
+end
+
+
+k = 3
+n = 12
+cl = upToEquiv(k,n,col312)
+
+println("There are " * string(length(cl)) * " diagram")
+for i in 1:length(cl)
+    println("Drawing number: " * string(i) * " / " * string(length(cl)))
+    drawFourDiags(k,n,cl[i], "312_postnikov/" * string(i) * ".pdf")
 end
 
 
