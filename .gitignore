@@ -1,2 +1,4 @@
 *.pdf
 *_postnikov
+tags
+.DS_Store
