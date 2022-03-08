@@ -1,9 +1,63 @@
-include("/Users/ank/master/code/julia_quiver/src/main.jl")
-include("/Users/ank/master/code/julia_quiver/src/plot.jl")
+include("../julia_quiver/src/main.jl")
+include("../julia_quiver/src/plot.jl")
 using LinearAlgebra
 
+mutable struct PostnikovDiagram
+    # For a (k,n) - Postnikov diagram
+    k::Int
+    n::Int
+
+    quiver::Quiver # The associated quiver to the postnikov diagram
+    plabicGraph::Quiver
+
+    whiteCliques::Vector{Vector{Arrow}}
+    blackCliques::Vector{Vector{Arrow}}
+
+    collection::Vector{Vector{Any}}
+end
+
+"""
+    Constructing the Postnikov data given a maximal collection.
+"""
+function PostnikovDiagram(k,n,maxNonCrossColl)
+    q = quiverFromCollection(k,n,maxNonCrossColl);
+    cQ = constructCliqueQuiver(k, n, maxNonCrossColl, q);
+
+
+    wc = whiteCliques(maxNonCrossColl)
+    bc = blackCliques(n, maxNonCrossColl)
+
+    wl = []
+    for cc in wc
+        l1cliq = []
+        for i in 1:length(cc)
+            j = (i+1 > length(cc) ? 1 : i+1)
+            v1 = find_vertex(q, Vertex(join(cc[i])))
+            v2 = find_vertex(q, Vertex(join(cc[j])))
+            a = find_arrow(q, v1,v2)
+            push!(l1cliq, a);
+        end
+        push!(wl, l1cliq);
+    end
+
+    bl = []
+    for cc in bc
+        l2cliq = []
+        for i in 1:length(cc)
+            j = (i-1 < 1 ? length(cc) : i-1)
+            v1 = find_vertex(q, Vertex(join(cc[i])))
+            v2 = find_vertex(q, Vertex(join(cc[j])))
+            a = find_arrow(q, v1,v2)
+            push!(l2cliq, a);
+        end
+        push!(bl, l2cliq);
+    end
+
+   return PostnikovDiagram(k,n, q, cQ, wl,bl, maxNonCrossColl)
+end
+
 function quiverFromCollection(k,n,collection)::Quiver
-    q = Quiver(map(x->Vertex(join(x)),collection))#, ["a",1,2], ["b",3,2], ["c",2,4])
+    q = Quiver(map(x->Vertex(join(x)),collection)) #, ["a",1,2], ["b",3,2], ["c",2,4])
 
     wc = whiteCliques(collection)
     bc = blackCliques(n,collection)
@@ -32,6 +86,7 @@ function quiverFromCollection(k,n,collection)::Quiver
     for mm in collectionOfProjectives(k,n)
         v = find_vertex(q,Vertex(join(sort(mm))))
         v.data["springFrozen"] = true;
+        v.data["frozen"] = true;
         v.data["position"] = [4*cos(2*pi*t/n),4*sin(2*pi*t/n)]
         t = t+1
     end
@@ -40,7 +95,6 @@ function quiverFromCollection(k,n,collection)::Quiver
         spring_step(q,0.1,0.2,1.0)
         #spring_step(q,0.1,1.0,1.0)
     end
-
     normalize_quiver!(q)
 
     return q
@@ -126,7 +180,6 @@ function dirArrowFromToVertex(q::Quiver, f::Vertex, t::Vertex, dir::String)
     diff = t.data["position"] - f.data["position"]
     neighbours_angles = [angle(diff, neighbours_verts[i].data["position"] - f.data["position"] ) for i in 1:length(neighbours_verts)]
     neighbours_angles =  map(x -> (x < 0 ? x + 360 : x), neighbours_angles)
-    #println(neighbours_angles)
 
     if dir == "right"
         return neighbours_verts[argmax(neighbours_angles)]
@@ -136,8 +189,6 @@ function dirArrowFromToVertex(q::Quiver, f::Vertex, t::Vertex, dir::String)
     end
     return nothing
 end
-
-
 
 
 ##################3
@@ -208,10 +259,6 @@ end
 
 
 
-
-
-
-
 ########## PLOTTING ###########
 
 function plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor="black", arrow_offset = 0.1)
@@ -228,7 +275,7 @@ function plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor=
     end
 
     #Points
-    scatter!(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., legend = false, color=vertex_color, markersize=10)
+    scatter!(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., color=vertex_color, markersize=10)
 
 end
 
@@ -257,8 +304,6 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection; fig = nothing, s
     #    end
     #end
 
-#map(x->x.data["position"], m)
-
     if drawOuterCirle
         sides = 100
         #rad = 1
@@ -267,12 +312,10 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection; fig = nothing, s
         lines!(circle_xs, circle_ys, linewidth=2, linestyle = :dash)
     end
 
-
-    #println("HE")
-
     if showPlabicGraph
         plot_quiver(cliqueQuiver, directed=false, vertex_color=:red);
     end
+
     if showPostnikovQuiver
         plot_quiver(postnikovQuiver, directed=true);
     end
@@ -282,11 +325,13 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection; fig = nothing, s
             lines!( mm[1], mm[2], color="green")
         end
     end
+
     if showPostnikovDiagram && showPostnikovDiamgramArrows
         for arr in arrs
             scatter!([arr[1][1]], [arr[1][2]], color="green", marker='▲', rotations=[arr[2]])
         end
     end
+
     if saveAs
         save(saveAs, f)
     end

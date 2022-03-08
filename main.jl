@@ -1,9 +1,9 @@
 include("postnikov.jl");
 include("postnikovQuiver.jl");
-include("maxcollection.jl")
-include("out412.jl")
-include("out312.jl")
-include("out510.jl")
+include("maxcollections/maxcollection.jl")
+include("maxcollections/out412.jl")
+include("maxcollections/out312.jl")
+include("maxcollections/out510.jl")
 
 function drawFourDiags(k,n,coll, fileName)
     fig = Figure(resolution = (1600, 1600), backgroundcolor = :transparent,figure_padding = 1);
@@ -71,14 +71,14 @@ function drawFourDiags(k,n,coll, fileName)
 end
 
 
-k = 3
-n = 12
-cl = upToEquiv(k,n,col312)
-
-println("There are " * string(length(cl)) * " diagram")
-for i in 1:length(cl)
-    println("Drawing number: " * string(i) * " / " * string(length(cl)))
-    drawFourDiags(k,n,cl[i], "312_postnikov/" * string(i) * ".pdf")
-end
+#k = 3
+#n = 12
+#cl = upToEquiv(k,n,col412)
+#
+#println("There are " * string(length(cl)) * " diagram")
+#for i in 1:length(cl)
+#    println("Drawing number: " * string(i) * " / " * string(length(cl)))
+#    drawFourDiags(k,n,cl[i], "312_postnikov/" * string(i) * ".pdf")
+#end
 
 
