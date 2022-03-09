@@ -70,15 +70,19 @@ function qpaPostnikovQuiverIdeal(pd::PostnikovDiagram; includeFrozen = true, pre
 end
 
 
-for myCol in col412
-    mpd = PostnikovDiagram(4,12,myCol);
+for myCol in upToEquiv(3,9,col39)# col412
+    mpd = PostnikovDiagram(3,9,myCol);
     Q = quiverToQPAString(mpd.quiver, includeFrozen=false)
-    GAP.evalstr("Q:="*Q)
-    GAP.evalstr("kQ := PathAlgebra(GF(3), Q)")
     sss = qpaPostnikovQuiverIdeal(mpd, includeFrozen=false, pre="kQ.")
-    GAP.evalstr("I := Ideal(kQ,"*sss*")")
-    println(GAP.evalstr("IsSelfinjectiveAlgebra(A);"),"    ", GAP.evalstr("IsSymmetricAlgebra(A)"), "  ", GAP.evalstr("Determinant(CartanMatrix(A));"))
+
+    GAP.evalstr("Q:="*Q*";")
+    GAP.evalstr("kQ := PathAlgebra(GF(3), Q);")
+    GAP.evalstr("I := Ideal(kQ,"*sss*");")
+    GAP.evalstr("IsAdmissibleIdeal(I);")
+    GAP.evalstr("A := kQ/I;")
+
+    println(GAP.evalstr("Determinant(CartanMatrix(A));"))
+    println(GAP.evalstr("IsSymmetricAlgebra(A);"))
+    println("")
 end
-
-
 
