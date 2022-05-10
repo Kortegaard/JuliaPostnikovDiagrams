@@ -1,11 +1,9 @@
 include("postnikov.jl");
 include("postnikovQuiver.jl");
 include("maxcollections/maxcollection.jl")
-include("maxcollections/out412.jl")
-include("maxcollections/out312.jl")
-include("maxcollections/out510.jl")
-#include("out39nn.jl")
-include("out39_2.jl")
+#include("maxcollections/out412.jl")
+#include("maxcollections/out312.jl")
+#include("maxcollections/out510.jl")
 
 #function drawFourDiags(k,n,coll, fileName)
     ##fig = Figure(resolution = (1600, 1600), backgroundcolor = :transparent,figure_padding = 1);
@@ -73,31 +71,33 @@ include("out39_2.jl")
     #save(fileName, fig);
 #end
 
+
 k = 3
 n = 9
-#findMaxinalNonCrossingCollections2(3,9,"./out39_2.txt")
-cl = union(upToEquiv(k,n, ppp))
+##findMaxinalNonCrossingCollections2(3,9,"./out39_2.txt")
+cl = union(upToEquiv(k,n, col39))
 ##cl = co
 ##
 #println("BEGINNING")
+#findMaxinalNonCrossingCollections2(3,9,"./out.txt", symmetric=false)
 ##findMaxinalNonCrossingCollections(3,6,"./36file.txt");
-println("There are " * string(length(cl)) * " diagram")
-for i in 1:length(cl)
+#println("There are " * string(length(cl)) * " diagram")
+for i in 1:1
     println("Drawing number: " * string(i) * " / " * string(length(cl)))
     drawPostnikovDiagram(k,n,cl[i],
         filename                    = "test/quiv_"*string(k)*"_"*string(n)*"_" * string(i) * ".tex",
-        showPostnikovQuiver         = true,
-        showPlabicGraph             = false, 
-        showPostnikovDiagram        = false, 
-        showPostnikovDiamgramArrows = true,
-    );
-    drawPostnikovDiagram(k,n,cl[i],
-        filename                    = "test/quiv_"*string(k)*"_"*string(n)*"_" * string(i) * "_2.tex",
         showPostnikovQuiver         = false,
-        showPlabicGraph             = false, 
+        showPlabicGraph             = true, 
         showPostnikovDiagram        = true, 
         showPostnikovDiamgramArrows = true,
     );
+   # drawPostnikovDiagram(k,n,cl[i],
+   #     filename                    = "test/quiv_"*string(k)*"_"*string(n)*"_" * string(i) * "_2.tex",
+   #     showPostnikovQuiver         = false,
+   #     showPlabicGraph             = false, 
+   #     showPostnikovDiagram        = true, 
+   #     showPostnikovDiamgramArrows = true,
+   # );
 end
 
 

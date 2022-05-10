@@ -280,7 +280,7 @@ function plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor=
 end
 
 
-function tikz_plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor="black", arrow_offset = 0.03, linewidth = 0.8, markerSize=1, kwargs...)
+function tikz_plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor="black", arrow_offset = 0.03, linewidth = 0.8, markerSize=1, draw_vertices=true ,kwargs...)
     #Arrows
     output = ""
     for arr in arrows(qq)
@@ -292,7 +292,9 @@ function tikz_plot_quiver(qq::Quiver; directed=true, vertex_color="black", linec
     end
 
     #Points
-    output *= tikzPoints(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., color=vertex_color, markSize=1.6)
+    if draw_vertices
+        output *= tikzPoints(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., color=vertex_color, markSize=1.6)
+    end
     return output
 
 end
@@ -341,9 +343,9 @@ function tikzDrawArrow(from, to; offset=0, kwargs...)
     return output
 end
 
-function tikzPoint(x, y; rotate=0, marker="*", markSize=0.1, kwargs...)
+function tikzPoint(x, y; rotate=0, color="black", marker="*", markSize=0.1, kwargs...)
     output = ""
-    output = output * "\\node[mark size="*string(markSize)*"pt,color=black,rotate="*string(rotate)*"] at ("*string(x)*","*string(y)*") {\\pgfuseplotmark{"*marker*"}}"
+    output = output * "\\node[mark size="*string(markSize)*"pt,color="*color*",rotate="*string(rotate)*"] at ("*string(x)*","*string(y)*") {\\pgfuseplotmark{"*marker*"}}"
     output = output * ";\n"
     return output
 end
@@ -359,7 +361,7 @@ end
 function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", fig = nothing, showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, saveAs=false, drawOuterCirle=true)
 
     open(filename, "w") do file
-        write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
+        write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\definecolor{mycolor}{rgb}{0.152941, 0.682353, 0.376471}\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
         postnikovQuiver = quiverFromCollection(k,n, maximalNonCrossingCollection);
         cliqueQuiver = constructCliqueQuiver(k,n, maximalNonCrossingCollection, postnikovQuiver)
         m, arrs = postnikovDiagramDrawingData(cliqueQuiver, n)
@@ -369,7 +371,22 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", fig 
         end
 
         if showPlabicGraph
-            write(file,tikz_plot_quiver(cliqueQuiver, directed=false, vertex_color="red", linewidth=0.8));
+            write(file,tikz_plot_quiver(cliqueQuiver, directed=false, vertex_color="red", linewidth=0.8, draw_vertices=false));
+            out = ""
+            #println(vertices(cliqueQuiver)[1].data)
+            for v in vertices(cliqueQuiver)
+                if haskey(v.data, "color")
+                    if getindex(v.data, "color") == "black"
+                        out *= tikzPoint(v.data["position"][1],v.data["position"][2], color="black", markSize=1.6)
+                    end
+                    if getindex(v.data, "color") == "white"
+                        out *= tikzPoint(v.data["position"][1],v.data["position"][2], color="red", markSize=1.6)
+                    end
+                else
+                    out *= tikzPoint(v.data["position"][1],v.data["position"][2], color="blue", markSize=1.6)
+                end
+            end
+            write(file, out);
         end
 
         if showPostnikovQuiver
@@ -378,13 +395,13 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", fig 
 
         if showPostnikovDiagram
             for mm in m
-                write(file,tikzDrawLine(mm[1],mm[2], linewidth=0.8))
+                write(file,tikzDrawLine(mm[1],mm[2], linewidth=0.6, color="mycolor"))
             end
         end
 
         if showPostnikovDiagram && showPostnikovDiamgramArrows
             for arr in arrs
-                write(file,tikzPoint(arr[1][1], arr[1][2], rotate=(arr[2]/pi * 180), marker="triangle*", markSize=1.6))
+                write(file,tikzPoint(arr[1][1], arr[1][2], rotate=(arr[2]/pi * 180), marker="triangle*", markSize=1.6, color="mycolor"))
             end
         end
 
@@ -397,75 +414,3 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", fig 
 
     return fig
 end
-
-
-#function drawPostnikovDiagram(k,n,maximalNonCrossingCollection; fig = nothing, showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, saveAs=false, drawOuterCirle=true)
-#
-#    open("test/out.tex", "w") do file
-#        write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
-#        postnikovQuiver = quiverFromCollection(k,n, maximalNonCrossingCollection);
-#        cliqueQuiver = constructCliqueQuiver(k,n, maximalNonCrossingCollection, postnikovQuiver)
-#        m, arrs = postnikovDiagramDrawingData(cliqueQuiver, n)
-#
-#        if fig == nothing
-#            fig = Figure(resolution = (800 , 800), backgroundcolor = :transparent,figure_padding = 1);
-#            ax = Axis(fig[1, 1], backgroundcolor = :transparent)
-#            hidedecorations!(ax)
-#            hidespines!(ax)
-#            ax.xticksvisible = false
-#            ax.yticksvisible = false
-#            ax.backgroundcolor = :transparent
-#        end
-#
-#        # Position Postnikov vertices in the middle of cliques
-#        #for v in vertices(postnikovQuiver)
-#        #    if !haskey(v.data, "springFrozen") || v.data["springFrozen"] == false
-#        #        v_clique_vertices = filter(x-> haskey(x.data, "clique") && v in x.data["clique"], vertices(cliqueQuiver))
-#        #        mean_vec = mean_vector(map(x->x.data["position"], v_clique_vertices))
-#        #        v.data["position"] = mean_vec
-#        #    end
-#        #end
-#
-#        if drawOuterCirle
-#            sides = 100
-#            #rad = 1
-#            circle_xs = [cos(2*pi*i/sides) for i in 0:sides]
-#            circle_ys = [sin(2*pi*i/sides) for i in 0:sides]
-#            #lines!(circle_xs, circle_ys, linewidth=2, linestyle = :dash)
-#            write(file, tikzDrawCirle((0,0), 1, color="blue", dashPattern=(3.0,3.0), dashed=true, linewidth=0.8))
-#        end
-#
-#        if showPlabicGraph
-#            #plot_quiver(cliqueQuiver, directed=false, vertex_color=:red);
-#            write(file,tikz_plot_quiver(cliqueQuiver, directed=false, vertex_color="red"));
-#        end
-#
-#        if showPostnikovQuiver
-#            #plot_quiver(postnikovQuiver, directed=true);
-#            write(file,tikz_plot_quiver(postnikovQuiver, directed=true));
-#        end
-#
-#        if showPostnikovDiagram
-#            for mm in m
-#                #lines!( mm[1], mm[2], color="green")
-#                write(file,tikzDrawLine(mm[1],mm[2], linewidth=0.8))
-#            end
-#        end
-#
-#        if showPostnikovDiagram && showPostnikovDiamgramArrows
-#            for arr in arrs
-#                #scatter!([arr[1][1]], [arr[1][2]], color="green", marker='▲', rotations=[arr[2]])
-#                write(file,tikzPoint(arr[1][1], arr[1][2], rotate=(arr[2]/pi * 180), marker="triangle*", markSize=1.6))
-#            end
-#        end
-#
-#        if saveAs
-#            save(saveAs, f)
-#        end
-#
-#        write(file, "\\end{tikzpicture}\n\\end{document}")
-#
-#    end
-#    return fig
-#
-#end

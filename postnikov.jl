@@ -271,6 +271,7 @@ function findMaxinalNonCrossingCollections(k, n, file; symmetric = true)
     nonprojs = setdiff(collect(combinations(1:n,k)), collectionOfProjectives(k, n))
     combs = combinations(nonprojs,k*(n-k)-n+1)
     # Runs through all the combinations and check whether maximal
+    println(length(combs))
     for m in combs
         if isMaximalNonCrossingCollection(k, n, m, true)
             if symmetric && !isSymmetricCollection(k, n, m, false)
