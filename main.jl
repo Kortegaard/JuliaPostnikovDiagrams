@@ -4,6 +4,8 @@ include("maxcollections/maxcollection.jl")
 include("maxcollections/out412.jl")
 include("maxcollections/out312.jl")
 include("maxcollections/out510.jl")
+#include("out39nn.jl")
+include("out39_2.jl")
 
 #function drawFourDiags(k,n,coll, fileName)
     ##fig = Figure(resolution = (1600, 1600), backgroundcolor = :transparent,figure_padding = 1);
@@ -71,18 +73,27 @@ include("maxcollections/out510.jl")
     #save(fileName, fig);
 #end
 
-
 k = 3
-n = 12
-#cl = upToEquiv(k,n,col312)
-cl = col312
-
+n = 9
+#findMaxinalNonCrossingCollections2(3,9,"./out39_2.txt")
+cl = union(upToEquiv(k,n, ppp))
+##cl = co
+##
+#println("BEGINNING")
+##findMaxinalNonCrossingCollections(3,6,"./36file.txt");
 println("There are " * string(length(cl)) * " diagram")
-for i in 1:1
+for i in 1:length(cl)
     println("Drawing number: " * string(i) * " / " * string(length(cl)))
     drawPostnikovDiagram(k,n,cl[i],
-        filename                    = "test/out2.tex",
+        filename                    = "test/quiv_"*string(k)*"_"*string(n)*"_" * string(i) * ".tex",
         showPostnikovQuiver         = true,
+        showPlabicGraph             = false, 
+        showPostnikovDiagram        = false, 
+        showPostnikovDiamgramArrows = true,
+    );
+    drawPostnikovDiagram(k,n,cl[i],
+        filename                    = "test/quiv_"*string(k)*"_"*string(n)*"_" * string(i) * "_2.tex",
+        showPostnikovQuiver         = false,
         showPlabicGraph             = false, 
         showPostnikovDiagram        = true, 
         showPostnikovDiamgramArrows = true,

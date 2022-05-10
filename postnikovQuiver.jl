@@ -292,7 +292,7 @@ function tikz_plot_quiver(qq::Quiver; directed=true, vertex_color="black", linec
     end
 
     #Points
-    output *= tikzPoints(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., color=vertex_color, markSize=1)
+    output *= tikzPoints(map(x -> [i for i in x],collect(zip(map(x->x.data["position"],vertices(qq))...)))..., color=vertex_color, markSize=1.6)
     return output
 
 end
@@ -469,5 +469,3 @@ end
 #    return fig
 #
 #end
-#
-#

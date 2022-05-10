@@ -86,7 +86,8 @@ end
     Checking if a collection of Noncorssing labels are maximal
 """
 function isMaximalNonCrossingCollection(k, n, list, exclude_projectives)
-    if exclude_projectives && length(list) == k*(n-k)-n+1; return isNonCrossingCollection(list); println("Checking..."); end;
+    #if exclude_projectives && length(list) == k*(n-k)-n+1; return isNonCrossingCollection(list); println("Checking..."); end;
+    if exclude_projectives; return isMaximalNonCrossingCollection(k, n, union(list, collectionOfProjectives(k,n))); end
     return isMaximalNonCrossingCollection(k, n, list);
 end
 
@@ -259,7 +260,7 @@ end
     Finding all maximal (k,n)-non-crossing collection of labels.
     NOTICE: This is done in a brute force way, making it very inefficient.
 """
-function findMaxinalNonCrossingCollections(k, n, file)
+function findMaxinalNonCrossingCollections(k, n, file; symmetric = true)
     if file != false
         open(file, "a") do io
             write(io, "\n")
@@ -269,9 +270,14 @@ function findMaxinalNonCrossingCollections(k, n, file)
     list = []
     nonprojs = setdiff(collect(combinations(1:n,k)), collectionOfProjectives(k, n))
     combs = combinations(nonprojs,k*(n-k)-n+1)
+    # Runs through all the combinations and check whether maximal
     for m in combs
-        if isMaximalNonCrossingCollection(k, n, m, true) && isSymmetricCollection(k, n, m, false)
-        isin=false
+        if isMaximalNonCrossingCollection(k, n, m, true)
+            if symmetric && !isSymmetricCollection(k, n, m, false)
+                continue
+            end
+
+            isin=false
             for l in list
                 if isEquivalentToCollectionUpToRotation(n, m, l); isin=true; break; end
             end
@@ -289,7 +295,7 @@ function findMaxinalNonCrossingCollections(k, n, file)
     return list
 end
 
-function findMaxinalNonCrossingCollections2(k, n, file)
+function findMaxinalNonCrossingCollections2(k, n, file; symmetric = true)
     function next!(t,n,lastIndex)
         if t[lastIndex] == n 
             if lastIndex == 1
@@ -328,10 +334,25 @@ function findMaxinalNonCrossingCollections2(k, n, file)
             end
         end
         potential = union(potential, add)
-        if length(potential) == k*(n-k)-n+1
-            if isMaximalNonCrossingCollection(k,n,potential)
+        if length(potential) == k*(n-k)-n+1 # To make sure it is (k,n) - postnikov (otherwise can be other)
+            if isMaximalNonCrossingCollection(k,n,union(potential,collectionOfProjectives(k, n)))
+                if isSymmetricCollection(k, n, union(potential,collectionOfProjectives(k, n)), false)
+                    println("SYM")
+                    return;
+                else
+                    println("THERE IS A NON SYM")
+                end
+                #println("HERE")
                 #println(potential)
+                if file != false
+                    isSymmetricCollection(k, n, union(potential,collectionOfProjectives(k, n)), false)
+                    open(file, "a") do io
+                        write(io, string(union(potential,collectionOfProjectives(k, n))));
+                        write(io, "\n")
+                    end;
+                end;
                 push!(list, potential);
+                #return
             end
             return
         end
@@ -342,12 +363,15 @@ function findMaxinalNonCrossingCollections2(k, n, file)
                 return
             end
             if !(t in potential)
-                recF(t,potential, [rotateSet(n,j*k, t) for j in 0:l-1])
+                if symmetric
+                    recF(t,potential, [rotateSet(n,j*k, t) for j in 0:l-1])
+                else
+                    recF(t,potential, [t])
+                end
             end
         end
     end
 
     recF(track, [], [])
-
 end
 
