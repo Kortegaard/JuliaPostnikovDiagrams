@@ -16,6 +16,7 @@ mutable struct PostnikovDiagram
     collection::Vector{Vector{Any}}
 end
 
+
 """
     Constructing the Postnikov data given a maximal collection.
 """
@@ -373,7 +374,6 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", fig 
         if showPlabicGraph
             write(file,tikz_plot_quiver(cliqueQuiver, directed=false, vertex_color="red", linewidth=0.8, draw_vertices=false));
             out = ""
-            #println(vertices(cliqueQuiver)[1].data)
             for v in vertices(cliqueQuiver)
                 if haskey(v.data, "color")
                     if getindex(v.data, "color") == "black"

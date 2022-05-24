@@ -1,6 +1,15 @@
 
 using Combinatorics
 
+struct LabelCollection
+    k::Int
+    n::Int
+
+    collection::Vector{Vector{Int}}
+end
+
+#D = LabelCollection(2,4,[[1,2,3],[2,3,4]])
+
 """
     true if and only if a<b<c cyclically
 """
@@ -53,7 +62,7 @@ end
 """
     Checks if a collection of labels is non-crossing
 """
-function isNonCrossingCollection(list)
+function isNonCrossingCollection(list::Vector{Any})
     for i in 1:length(list)
         for j in i+1:length(list)
             if i == j; continue; end
@@ -62,6 +71,12 @@ function isNonCrossingCollection(list)
     end
     return true
 end
+
+function isNonCrossingCollection(col::LabelCollection)
+    return isNonCrossingCollection(col.collection)
+end
+
+
 
 """
     Checking if a collection of Noncorssing labels are maximal
@@ -91,6 +106,10 @@ function isMaximalNonCrossingCollection(k, n, list, exclude_projectives)
     return isMaximalNonCrossingCollection(k, n, list);
 end
 
+function isMaximalNonCrossingCollection(col::LabelCollection)
+    return isMaximalNonCrossingCollection(col.k, col.n, col.collection)
+end
+
 function rotateSet(n, rotate, set)
     return sort(map(x->((x + rotate) % n == 0 ? n : (x+rotate) % n),set))
 end
@@ -99,10 +118,18 @@ function rotateCollection(n, rotate, collection)
     return map(y->rotateSet(n,rotate,y),collection)
 end
 
+function rotate!(col::LabelCollection, rotate)
+    col.collection = rotateCollection(col.n, rotate, col.collection)
+end
+
 """
     Checks if a collection is symmetric.
 """
 function isSymmetricCollection(k,n, collection)
+    isSymmetricCollection(k, n, collection, false)
+end
+
+function isSymmetricCollection(col::LabelCollection)
     isSymmetricCollection(k, n, collection, false)
 end
 
@@ -128,6 +155,13 @@ function isEquivalentToCollectionUpToRotation(n, col1, col2)
     return false
 end
 
+function isEquivalentToCollectionUpToRotation(col1::LabelCollection, col2::LabelCollection)
+    if col1.n != col2.n && col1.k != col2.k
+        return false
+    end
+    return isEquivalentToCollectionUpToRotation(col1.n, col1.collection, col2.collection)
+end
+
 """
 """
 function isEquivalentToCollectionUpToMirrorAndRotation(n, col1, col2)
@@ -139,6 +173,13 @@ function isEquivalentToCollectionUpToMirrorAndRotation(n, col1, col2)
         if col1Mirr == c2; return true; end
     end
     return false
+end
+
+function isEquivalentToCollectionUpToMirrorAndRotation(col1::LabelCollection, col2::LabelCollection)
+    if col1.n != col2.n && col1.k != col2.k
+        return false
+    end
+    return isEquivalentToCollectionUpToRotation(col1.n, col1.collection, col2.collection)
 end
 
 
