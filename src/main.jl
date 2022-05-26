@@ -1,4 +1,4 @@
-include("postnikov.jl");
+include("Postnikov.jl");
 include("postnikovQuiver.jl");
 include("maxcollections/maxcollection.jl")
 
