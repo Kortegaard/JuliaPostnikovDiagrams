@@ -6,14 +6,9 @@ mutable struct Tikz
     #Vertex(label::LabelType) = new(label, Arrow[], Arrow[], Dict{String,Any}())
 end
 
-t = Tikz()
-
 #t += tikz_plot_quiver(qq,directed=true)
 #add_cmd(t, tikz_plot_quiver(qq,directed=true));
 #tikz_plot_quiver(t, qq, directed=true)
-
-
-
 
 function tikz_plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor="black", arrow_offset = 0.03, linewidth = 0.8, markerSize=1, draw_vertices=true ,kwargs...)
     #Arrows
@@ -92,4 +87,3 @@ function tikzPoints(xs, ys; kwargs...)
     end
     return output
 end
-
