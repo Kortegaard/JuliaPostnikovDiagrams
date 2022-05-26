@@ -1,4 +1,3 @@
-
 using Combinatorics
 
 struct LabelCollection
@@ -7,8 +6,6 @@ struct LabelCollection
 
     collection::Vector{Vector{Int}}
 end
-
-#D = LabelCollection(2,4,[[1,2,3],[2,3,4]])
 
 """
     true if and only if a<b<c cyclically
@@ -62,7 +59,7 @@ end
 """
     Checks if a collection of labels is non-crossing
 """
-function isNonCrossingCollection(list::Vector{Any})
+function isNonCrossingCollection(list)
     for i in 1:length(list)
         for j in i+1:length(list)
             if i == j; continue; end
@@ -212,6 +209,7 @@ function whiteClique(L, collection)
     return sort(list, by= x -> setdiff(x,L)[1]);
 end
 
+
 """
     Generates a black clique with labels contained in L.
     Make sure |L| = k + 1. With k being length of labels in collection
@@ -225,8 +223,6 @@ function blackClique(L, collection)
     end
     return sort(list, by= x -> setdiff(L,x)[1]);
 end
-
-using Combinatorics
 
 """
     Returns a list of white cliques with length > 1, for a given noncrossing collections.
@@ -246,6 +242,10 @@ function whiteCliques(collection)
         end
     end
     return cliques
+end
+
+function whiteCliques(col::LabelCollection)
+    return whiteCliques(col.collection)
 end
 
 """
@@ -271,6 +271,11 @@ function blackCliques(n, collection)
     return cliques;
 end
 
+function blackCliques(col::LabelCollection)
+    return blackCliques(col.n, col.collection)
+end
+
+# What is this
 function cliqueBoundary(clique, sortBy)
     bounds = []
     for i in 1:length(clique)

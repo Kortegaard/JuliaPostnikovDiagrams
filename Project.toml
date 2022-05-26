@@ -1,0 +1,9 @@
+name = "postnikov"
+uuid = "d4dcb2d5-9b70-491f-b573-de9c149bddb1"
+authors = ["Kortegaard <kortegaard@math.au.dk>"]
+version = "0.1.0"
+
+[deps]
+Combinatorics = "861a8166-3701-5b0c-9a16-15d98fcdc6aa"
+Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
