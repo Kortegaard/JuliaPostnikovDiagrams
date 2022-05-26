@@ -1,5 +1,5 @@
-include("../julia_quiver/src/main.jl")
-include("../julia_quiver/src/plot.jl")
+
+using Quivers
 using LinearAlgebra
 
 mutable struct PostnikovDiagram
@@ -93,8 +93,8 @@ function quiverFromCollection(k,n,collection)::Quiver
     end
 
     for i in 1:1000
-        spring_step(q,0.1,0.2,1.0)
-        #spring_step(q,0.1,1.0,1.0)
+        #spring_step(q,0.1,0.2,1.0)
+        spring_step(q,0.1,0.2,0.3)
     end
     normalize_quiver!(q)
 
@@ -142,7 +142,7 @@ function constructCliqueQuiver(k,n, collection, collectionQuiver)
         v.data = Dict{String, Any}()
         offset = 0
         if n%2 == 0
-            offset = n+5 #n+3 # n-1
+            offset = n-1 #n+5 #n+3 # n-1
         else
             offset = n+2
         end
@@ -359,7 +359,7 @@ function tikzPoints(xs, ys; kwargs...)
     return output
 end
 
-function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", fig = nothing, showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, saveAs=false, drawOuterCirle=true)
+function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, drawOuterCirle=true)
 
     open(filename, "w") do file
         write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\definecolor{mycolor}{rgb}{0.152941, 0.682353, 0.376471}\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
@@ -405,12 +405,11 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", fig 
             end
         end
 
-        if saveAs
-            save(saveAs, f)
-        end
-
         write(file, "\\end{tikzpicture}\n\\end{document}")
     end
 
-    return fig
+end
+
+function drawPostnikovDiagram(col::LabelCollection; kwargs...)
+    drawPostnikovDiagram(col.k, col.n, col.collection; kwargs...)
 end

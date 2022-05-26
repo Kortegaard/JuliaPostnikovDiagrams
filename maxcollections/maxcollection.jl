@@ -1,4 +1,4 @@
-include("../postnikov.jl")
+include("../src/collections.jl")
 
 col36NonSym = [
     [[1, 2, 4], [1, 2, 5], [1, 3, 4], [1, 4, 5]]

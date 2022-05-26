@@ -1,10 +1,21 @@
 using Combinatorics
 
-struct LabelCollection
+mutable struct LabelCollection
     k::Int
     n::Int
 
     collection::Vector{Vector{Int}}
+end
+
+
+Base.hash(c::LabelCollection) = Base.hash(c.collection)
+Base.:(==)(a::LabelCollection, b::LabelCollection) = (a.k == b.k && a.n == b.n && isEquivalentToCollectionUpToRotation(a.n, a.collection, b.collection))
+
+"""
+    So
+"""
+function sort!(col::LabelCollection)
+    col.collection = sort(map( x->sort(x), col.collection))
 end
 
 """
@@ -127,7 +138,7 @@ function isSymmetricCollection(k,n, collection)
 end
 
 function isSymmetricCollection(col::LabelCollection)
-    isSymmetricCollection(k, n, collection, false)
+    isSymmetricCollection(col.k, col.n, col.collection, false)
 end
 
 """
