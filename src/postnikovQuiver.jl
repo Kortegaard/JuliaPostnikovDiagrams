@@ -286,13 +286,14 @@ function plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor=
 
 end
 
-function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, drawOuterCirle=true)
+function drawPostnikovDiagram(k, n, maximalNonCrossingCollection; filename="", showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, drawOuterCirle=true)
+    # Storing tikz to temporary file
     fn = tempname()
     open(fn, "w") do file
         write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\definecolor{mycolor}{rgb}{0.152941, 0.682353, 0.376471}\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
         postnikovQuiver = quiverFromCollection(k,n, maximalNonCrossingCollection);
-        cliqueQuiver = constructCliqueQuiver(k,n, maximalNonCrossingCollection, postnikovQuiver)
-        m, arrs = postnikovDiagramDrawingData(cliqueQuiver, n)
+        cliqueQuiver    = constructCliqueQuiver(k,n, maximalNonCrossingCollection, postnikovQuiver)
+        m, arrs         = postnikovDiagramDrawingData(cliqueQuiver, n)
 
         if drawOuterCirle
             write(file, tikzDrawCirle((0,0), 1, color="blue", dashPattern=(3.0,3.0), dashed=true, linewidth=0.8))
@@ -335,7 +336,8 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", show
         write(file, "\\end{tikzpicture}\n\\end{document}")
     end
 
-    if splitext(filename)[2] == ".pdf"
+    # Compile if output is pdf, otherwise move file.
+    if lowercase(splitext(filename)[2]) == ".pdf"
         compileTikzFile(fn, filename)
     else
         mv(fn, filename, force=true)
