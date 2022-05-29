@@ -95,6 +95,7 @@ function quiverFromCollection(k,n,collection)::Quiver
         v.data["springFrozen"] = true;
         v.data["frozen"] = true;
         v.data["position"] = [4*cos(2*pi*t/n),4*sin(2*pi*t/n)]
+        #v.data["position"] = [cos(2*pi*(2*i + (offset))/(2*n)), sin(2*pi*(2*i + (offset))/(2*n))]
         t = t+1
     end
 
@@ -148,7 +149,7 @@ function constructCliqueQuiver(k,n, collection, collectionQuiver)
         v.data = Dict{String, Any}()
         offset = 0
         if n%2 == 0
-            offset = n-1 #n+5 #n+3 # n-1
+            offset = n+5 #n+5 #n+3 # n-1
         else
             offset = n+2
         end
