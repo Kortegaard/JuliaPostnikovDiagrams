@@ -7,7 +7,7 @@ mutable struct LabelCollection
     collection::Vector{Vector{Int}}
 end
 
-
+Base.copy(s::LabelCollection) = LabelCollection(s.k, s.n, s.collection)
 Base.hash(c::LabelCollection) = Base.hash(c.collection)
 Base.:(==)(a::LabelCollection, b::LabelCollection) = (a.k == b.k && a.n == b.n && isEquivalentToCollectionUpToRotation(a.n, a.collection, b.collection))
 
@@ -85,31 +85,26 @@ function isNonCrossingCollection(col::LabelCollection)
 end
 
 
-
 """
     Checking if a collection of Noncorssing labels are maximal
+    see [PTZ ,thm. 1.8], [OPS thm. 4.7]
 """
 function isMaximalNonCrossingCollection(k, n, list)
-    if !isNonCrossingCollection(list) return false end
-    for it in combinations(1:n,k)
-        if it in list; continue; end
-        if isNonCrossingCollection(union(list, [it])) return false end
-    end
-    return true;
+    return isNonCrossingCollection(list) && length(list) == k*(n-k)+1
+    #if !isNonCrossingCollection(list) return false end
+    #for it in combinations(1:n,k)
+    #    if it in list; continue; end
+    #    if isNonCrossingCollection(union(list, [it])) return false end
+    #end
+    #return true;
 end
 
-"""
-function isMaximalNonCrossingCollection(k, n, list)
-    if length(list) == k*(n-k)+1; return isNonCrossingCollection(list); end;
-    return false;
-end
-"""
 
 """
     Checking if a collection of Noncorssing labels are maximal
 """
 function isMaximalNonCrossingCollection(k, n, list, exclude_projectives)
-    #if exclude_projectives && length(list) == k*(n-k)-n+1; return isNonCrossingCollection(list); println("Checking..."); end;
+    if exclude_projectives && length(list) == k*(n-k)-n+1; return isNonCrossingCollection(list); end;
     if exclude_projectives; return isMaximalNonCrossingCollection(k, n, union(list, collectionOfProjectives(k,n))); end
     return isMaximalNonCrossingCollection(k, n, list);
 end

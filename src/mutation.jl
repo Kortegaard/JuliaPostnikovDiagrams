@@ -3,8 +3,8 @@ Given a maximal collection `C` [OPS, thm 1.4] describes how and under which circ
 To check whether we can mutate, we use black and white cliques, which is also explained in [OPS].
 """
 
-include("./collections.jl")
-include("./postnikovQuiver.jl")
+include("collections.jl")
+include("postnikovQuiver.jl")
 
 
 """
@@ -13,18 +13,25 @@ include("./postnikovQuiver.jl")
 function mutations(col::LabelCollection; depth = 1)
     muts = []
     for c in col.collection
-        for mut in mutationsAtLabel(col, c)
+        for mut in mutationAtLabel(col, c)
             push!(muts, mut)
         end
     end
     return muts
 end
 
+"""
+    Mutations in all k-rotations of a label.
+    Given a symmetric collection, this mutates to another symmetric collection.
+"""
 function symmetricMutation(col::LabelCollection, label)
     pos_rot = col.n / gcd(col.k, col.n)
-    c = deepcopy(col)
+    c = col
     for i in 0:pos_rot-1
-        c = mutationAtLabel(c, rotateSet(col.n, i, label))
+        a = mutationAtLabel(c, rotateSet(col.n, col.k*Int(i), label))
+        if length(a) > 0
+            c = a[1]
+        end
     end
     return c
 end
@@ -32,7 +39,7 @@ end
 """
     Given a label `label` in the Labelcollection `col` it computes mutation at that label
 """
-function mutationAtLabel(col::LabelCollection, label)
+function mutationAtLabel(col::LabelCollection, label)::Vector{LabelCollection}
     pairs = findCrossingPairsAtLabel(col, label)
     muts = []
     # TODO: can only mutate if |pairs| = 1 ?
