@@ -95,7 +95,6 @@ function quiverFromCollection(k,n,collection)::Quiver
         v.data["springFrozen"] = true;
         v.data["frozen"] = true;
         v.data["position"] = [4*cos(2*pi*t/n),4*sin(2*pi*t/n)]
-        #v.data["position"] = [cos(2*pi*(2*i + (offset))/(2*n)), sin(2*pi*(2*i + (offset))/(2*n))]
         t = t+1
     end
 
@@ -115,8 +114,11 @@ end
 function constructCliqueQuiver(k,n, collection, collectionQuiver)
     wc = whiteCliques(collection)
     bc = blackCliques(n,collection)
+
+    # Construct clique consisting of white and black cliques
     cliqueQuiver = Quiver(union([Vertex("w"*string(i)) for i in 1:length(wc)], [Vertex("b"*string(i)) for i in 1:length(bc)]))
 
+    # Adding data to all white cliques
     for i in 1:length(wc)
         v = find_vertex(cliqueQuiver, Vertex("w"*string(i)))
         v.data = Dict{String, Any}()
@@ -125,6 +127,8 @@ function constructCliqueQuiver(k,n, collection, collectionQuiver)
         v.data["position"] = mean_vector([find_vertex(collectionQuiver,Vertex(join(x))).data["position"] for x in wc[i]])
         v.data["color"] = "white"
     end
+
+    # Adding data to all black cliques
     for i in 1:length(bc)
         v = find_vertex(cliqueQuiver, Vertex("b"*string(i)))
         v.data = Dict{String, Any}()
@@ -134,9 +138,11 @@ function constructCliqueQuiver(k,n, collection, collectionQuiver)
         v.data["color"] = "black"
     end
 
+    # Constructing arrows in quiver
     for c1 in vertices(cliqueQuiver)
         for c2 in vertices(cliqueQuiver)
             if c1 == c2; continue; end
+            # checking if vertices are adjecent in accordence to [OPS]
             int = intersect(cliqueBoundary(c1.data["clique"], x->x.label), cliqueBoundary(c2.data["clique"], x->x.label))
             if length(int) == 1
                 add_arrow!(cliqueQuiver,c1,c2)
@@ -144,20 +150,18 @@ function constructCliqueQuiver(k,n, collection, collectionQuiver)
         end
     end
 
-    for i in 1:n
-        v = Vertex(string(i))
+    # adding boundary vertices 
+    for i in 0:n-1
+        v = Vertex(string(i+1))
         v.data = Dict{String, Any}()
-        offset = 0
-        if n%2 == 0
-            offset = n+5 #n+5 #n+3 # n-1
-        else
-            offset = n+2
-        end
-        v.data["position"] = [cos(2*pi*(2*i + (offset))/(2*n)), sin(2*pi*(2*i + (offset))/(2*n))]
+        offset = 1/2 - k # this offset comes from difference of the orders in which the projectives are computed
+        v.data["position"] = [cos(2*pi*(i + offset)/n), sin(2*pi*(i + offset)/n )]
         add_vertex!(cliqueQuiver, v)
     end
 
+    # Adding arrows to boundary vertices
     for b in cliqueBoundary(collectionOfProjectives(k,n), false)
+        b = map(x->sort(x),b)
         blab = sort(map(join, sort(b)))
         v = find_vertex(cliqueQuiver, Vertex(string(setdiff(b[2], b[1])[1])))
         for vv in vertices(cliqueQuiver)
@@ -199,7 +203,7 @@ function dirArrowFromToVertex(q::Quiver, f::Vertex, t::Vertex, dir::String)
 end
 
 
-##################3
+##################
 
 using Interpolations
 

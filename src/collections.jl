@@ -287,6 +287,9 @@ function blackCliques(col::LabelCollection)
 end
 
 # What is this
+# Path around clique 
+# ex. [1,2,3,4] -> [[1,2], [2,3], [3,4], [4,1]]
+# ex. [5,3,2,6] -> [[5,3], [3,2], [2,6], [6,5]]
 function cliqueBoundary(clique, sortBy)
     bounds = []
     for i in 1:length(clique)
