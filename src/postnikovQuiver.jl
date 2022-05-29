@@ -1,6 +1,7 @@
 using Quivers
 using LinearAlgebra
 include("tikz.jl")
+include("collections.jl")
 
 mutable struct PostnikovDiagram
     # For a (k,n) - Postnikov diagram
@@ -57,6 +58,12 @@ function PostnikovDiagram(k,n,maxNonCrossColl)
    return PostnikovDiagram(k,n, q, cQ, wl,bl, maxNonCrossColl)
 end
 
+"""
+    Given a (k,n)-collection, this function the associated frozen quiver, using white and black cliques as described in [OPS].
+
+    Furthermore, a position will be calculated for every vertex, where the frozen vertices will be places on a cirlce
+    and the rest of the vertices will go through a spring algorithm.
+"""
 function quiverFromCollection(k,n,collection)::Quiver
     q = Quiver(map(x->Vertex(join(x)),collection)) #, ["a",1,2], ["b",3,2], ["c",2,4])
 
@@ -81,7 +88,6 @@ function quiverFromCollection(k,n,collection)::Quiver
         end
     end
 
-    #using Plots
     set_random_positions!(q);
     t = 0
     for mm in collectionOfProjectives(k,n)
@@ -205,7 +211,7 @@ function postnikovDiagramDrawingData(cliqueQuiver, n)
         n = neighs[1]
 
         points =  [v.data["position"]]
-        # Replace 100 by a more sensable choise ()
+        # Replace 100 by a more sensable choice
         for _ in 1:100
             nn_dir = ""
             if haskey(n.data, "color") && n.data["color"] == "black"
@@ -281,8 +287,8 @@ function plot_quiver(qq::Quiver; directed=true, vertex_color="black", linecolor=
 end
 
 function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", showPlabicGraph = false, showPostnikovDiagram = true, showPostnikovDiamgramArrows = true, showPostnikovQuiver=false, drawOuterCirle=true)
-
-    open(filename, "w") do file
+    fn = tempname()
+    open(fn, "w") do file
         write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\definecolor{mycolor}{rgb}{0.152941, 0.682353, 0.376471}\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
         postnikovQuiver = quiverFromCollection(k,n, maximalNonCrossingCollection);
         cliqueQuiver = constructCliqueQuiver(k,n, maximalNonCrossingCollection, postnikovQuiver)
@@ -329,6 +335,11 @@ function drawPostnikovDiagram(k,n,maximalNonCrossingCollection;filename="", show
         write(file, "\\end{tikzpicture}\n\\end{document}")
     end
 
+    if splitext(filename)[2] == ".pdf"
+        compileTikzFile(fn, filename)
+    else
+        mv(fn, filename, force=true)
+    end
 end
 
 function drawPostnikovDiagram(col::LabelCollection; kwargs...)

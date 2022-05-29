@@ -5,7 +5,7 @@ export PostnikovDiagram,
 
     quiverFromCollection,
     constructCliqueQuiver,
-    drawPostnikovDiagram,
+    drawPostnikovDiagram
 
 
 include("collections.jl")

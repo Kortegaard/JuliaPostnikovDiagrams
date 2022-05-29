@@ -79,9 +79,7 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 
 [[Quivers]]
 deps = ["LinearAlgebra"]
-git-tree-sha1 = "0fc949af150b000e2b278355e7c60410a18cec93"
-repo-rev = "master"
-repo-url = "../julia_quiver"
+path = "/Users/ank/master/code/julia_quiver"
 uuid = "484e10a1-6d98-46ca-8db2-94de0be59128"
 version = "0.1.0"
 

@@ -3,6 +3,11 @@ include("postnikovQuiver.jl")
 using GAP
 GAP.evalstr("LoadPackage(\"QPA\");")
 
+"""
+    Given a quiver q, this function will return a string of a GAP QPA quiver.
+
+    TODO: Change `includeFrozen`, to a filter function.
+"""
 function quiverToQPAString(q::Quiver; includeFrozen = true)
     i = 1
     for v in vertices(q)
@@ -26,12 +31,15 @@ function quiverToQPAString(q::Quiver; includeFrozen = true)
     arrString = string([[a.start.data["name"], a.termination.data["name"], a.data["name"]] for a in arrows(q) if (includeFrozen || (!vertexIsFrozen(a.start) && !vertexIsFrozen(a.termination)))])
     
     gapQuiverStr = "Quiver(" * vertsString * ", " * arrString * ");"
-    #gapQuiv = GAP.evalstr("Q := "* gapQuiverStr);
     return gapQuiverStr
 end
 
+
+"""
+    Given a Postnikov diagram pd, this function will generate the ideal of which comes from the potential
+    of the frozen quiver associated to Postnikov diagram pd
+"""
 function qpaPostnikovQuiverIdeal(pd::PostnikovDiagram; includeFrozen = true, pre = "Q.")
-   
     idealList = []
     for arr in arrows(pd.quiver)
         if !includeFrozen
@@ -39,7 +47,7 @@ function qpaPostnikovQuiverIdeal(pd::PostnikovDiagram; includeFrozen = true, pre
                 continue
             end
         end
-            #CODE HERE
+
         wcEl = get(filter(x -> arr in x, pd.whiteCliques), 1,nothing)
         if any(map(arr->get(arr.start.data, "frozen", false) || get(arr.termination.data, "frozen", false),wcEl))
             wcEl = nothing
@@ -69,20 +77,18 @@ function qpaPostnikovQuiverIdeal(pd::PostnikovDiagram; includeFrozen = true, pre
     return "[" * join(idealList, ", ") * "]"
 end
 
-
-for myCol in upToEquiv(3,9,col39)# col412
-    mpd = PostnikovDiagram(3,9,myCol);
-    Q = quiverToQPAString(mpd.quiver, includeFrozen=false)
-    sss = qpaPostnikovQuiverIdeal(mpd, includeFrozen=false, pre="kQ.")
-
-    GAP.evalstr("Q:="*Q*";")
-    GAP.evalstr("kQ := PathAlgebra(GF(3), Q);")
-    GAP.evalstr("I := Ideal(kQ,"*sss*");")
-    GAP.evalstr("IsAdmissibleIdeal(I);")
-    GAP.evalstr("A := kQ/I;")
-
-    println(GAP.evalstr("Determinant(CartanMatrix(A));"))
-    println(GAP.evalstr("IsSymmetricAlgebra(A);"))
-    println("")
-end
-
+#for myCol in upToEquiv(3,9,col39)# col412
+#    mpd = PostnikovDiagram(3,9,myCol);
+#    Q = quiverToQPAString(mpd.quiver, includeFrozen=false)
+#    sss = qpaPostnikovQuiverIdeal(mpd, includeFrozen=false, pre="kQ.")
+#
+#    GAP.evalstr("Q:="*Q*";")
+#    GAP.evalstr("kQ := PathAlgebra(GF(3), Q);")
+#    GAP.evalstr("I := Ideal(kQ,"*sss*");")
+#    GAP.evalstr("IsAdmissibleIdeal(I);")
+#    GAP.evalstr("A := kQ/I;")
+#
+#    println(GAP.evalstr("Determinant(CartanMatrix(A));"))
+#    println(GAP.evalstr("IsSymmetricAlgebra(A);"))
+#    println("")
+#end

@@ -3,14 +3,14 @@ Given a maximal collection `C` [OPS, thm 1.4] describes how and under which circ
 To check whether we can mutate, we use black and white cliques, which is also explained in [OPS].
 """
 
-include("../src/collections.jl")
-include("../src/postnikovQuiver.jl")
+include("./collections.jl")
+include("./postnikovQuiver.jl")
 
 
 """
     Giving a maximal collection `col` this function calculated a list `muts` of maximal collections of labels which are given by mutating col once.
 """
-function mutations(col::LabelCollection)
+function mutations(col::LabelCollection; depth = 1)
     muts = []
     for c in col.collection
         for mut in mutationsAtLabel(col, c)
@@ -20,6 +20,14 @@ function mutations(col::LabelCollection)
     return muts
 end
 
+function symmetricMutation(col::LabelCollection, label)
+    pos_rot = col.n / gcd(col.k, col.n)
+    c = deepcopy(col)
+    for i in 0:pos_rot-1
+        c = mutationAtLabel(c, rotateSet(col.n, i, label))
+    end
+    return c
+end
 
 """
     Given a label `label` in the Labelcollection `col` it computes mutation at that label

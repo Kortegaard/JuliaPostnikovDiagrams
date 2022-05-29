@@ -87,3 +87,31 @@ function tikzPoints(xs, ys; kwargs...)
     end
     return output
 end
+
+function compileTikzFile(tikz_filename, output_path)
+    output_dir, output_filename = splitdir(output_path) # ("/../../dir", "name.tex")
+    if output_dir == ""; output_dir = "."  end
+    output_fullpath = joinpath(realpath(output_dir), output_filename)
+
+    input_dir, input_filename = splitdir(tikz_filename) # ("/../../dir", "name.tex")
+    if input_dir == ""; input_dir = "."  end
+    input_fullpath = joinpath(realpath(input_dir), input_filename)
+    input_filename_no_ext = splitext(input_filename)[1]  # ("name", "tex")
+
+    build_dir = joinpath(tempdir(), "tikzbuild")
+    cmd = `pdflatex -interaction nonstopmode -output-directory $build_dir`
+
+    mkpath(build_dir)
+    out = read(`$cmd $input_fullpath`, String)
+    mv(build_dir * "/" * input_filename_no_ext * ".pdf", output_fullpath, force = true)
+end
+
+function compileTikz(tikz_string, output)
+    outfile = tempname()
+
+    open(outfile, "w") do file
+        write(file, tikz_string) 
+    end
+
+    compileTikzFile(outfile, output)
+end
