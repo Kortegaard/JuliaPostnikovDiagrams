@@ -295,7 +295,7 @@ function drawPostnikovDiagram(k, n, maximalNonCrossingCollection; filename="", s
     # Storing tikz to temporary file
     fn = tempname()
     open(fn, "w") do file
-        write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\definecolor{mycolor}{rgb}{0.152941, 0.682353, 0.376471}\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
+        write(file, "\\documentclass[crop,tikz]{standalone}\n\\usetikzlibrary{plotmarks,arrows.meta}\n\\definecolor{mycolor}{RGB}{0,170,0}\\begin{document}\n\\begin{tikzpicture}[x=150pt,y=150pt]\n") 
         postnikovQuiver = quiverFromCollection(k,n, maximalNonCrossingCollection);
         cliqueQuiver    = constructCliqueQuiver(k,n, maximalNonCrossingCollection, postnikovQuiver)
         m, arrs         = postnikovDiagramDrawingData(cliqueQuiver, n)
@@ -323,12 +323,22 @@ function drawPostnikovDiagram(k, n, maximalNonCrossingCollection; filename="", s
         end
 
         if showPostnikovQuiver
-            write(file,tikz_plot_quiver(postnikovQuiver, directed=true));
+            write(file,tikz_plot_quiver(postnikovQuiver, directed=true, vertex_color="purple"));
         end
 
         if showPostnikovDiagram
             for mm in m
-                write(file,tikzDrawLine(mm[1],mm[2], linewidth=0.6, color="mycolor"))
+                m1 = mm[1]
+                m2 = mm[2]
+                #for i in 1:length(mm[1])
+                #    ang = 2*angle(mm[1][i] + mm[2][i] *im)
+                #    if ang < 0
+                #        ang = ang + 2*pi
+                #    end
+                #    push!(m1, (cos(ang)*mm[1][i] - sin(ang)*mm[2][i]))
+                #    push!(m2, (sin(ang)*mm[1][i] + cos(ang)*mm[2][i]))
+                #end;
+                write(file,tikzDrawLine(m1,m2, linewidth=0.6, color="mycolor"))
             end
         end
 

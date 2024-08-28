@@ -4,8 +4,8 @@ include("maxcollections/maxcollection.jl")
 
 
 k = 3
-n = 9
-cl = union(upToEquiv(k,n, col39))
+n = 6
+#cl = union(upToEquiv(k,n, col36))
 println("There are " * string(length(cl)) * " diagram")
 
 for i in 1:1

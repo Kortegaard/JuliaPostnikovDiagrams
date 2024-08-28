@@ -15,7 +15,7 @@ function tikz_plot_quiver(qq::Quiver; directed=true, vertex_color="black", linec
     output = ""
     for arr in arrows(qq)
         if directed
-            output *= tikzDrawArrow(arr.start.data["position"], arr.termination.data["position"], offset=arrow_offset, linewidth=linewidth)
+            output *= tikzDrawArrow(arr.start.data["position"], arr.termination.data["position"], offset=arrow_offset, linewidth=linewidth, color="purple")
         else
             output *= tikzDrawLine( map(x->[i for i in x],collect(zip(arr.start.data["position"], arr.termination.data["position"]) ))..., color=linecolor, linewidth=linewidth)
         end
